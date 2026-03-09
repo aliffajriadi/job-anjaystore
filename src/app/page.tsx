@@ -1,0 +1,467 @@
+"use client";
+
+import React, { useState, useMemo } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import {
+  Search,
+  ChevronRight,
+  Loader2,
+  Package,
+  Wallet,
+  Gamepad2,
+  PlusCircle,
+  ArrowRight,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer";
+import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
+import { useProducts } from "@/lib/hooks/useProductQueries";
+import { AnimatedNumber } from "./components/AnimatedNumber";
+
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  priceIdr?: number;
+  priceDl?: number;
+  priceMode: "IDR_ONLY" | "DL_ONLY" | "BOTH";
+  image: string;
+  description?: string;
+  stock: number;
+  isActive: boolean;
+}
+
+export default function Home() {
+  const { user, isAuthenticated } = useAuth();
+  const { addToCart, setIsCartOpen } = useCart();
+  const { data: products = [], isLoading: productsLoading } = useProducts();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Dynamic Categories
+  const categories = useMemo(() => {
+    const activeProducts = (products as Product[]).filter((p) => p.isActive);
+    const cats = Array.from(
+      new Set(activeProducts.map((p) => p.category).filter(Boolean)),
+    ) as string[];
+    return ["Semua", ...cats];
+  }, [products]);
+
+  // Combined Searching & Filtering
+  const filteredProducts = useMemo(() => {
+    return (products as Product[]).filter((product) => {
+      if (!product.isActive) return false;
+      const matchesSearch = product.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "Semua" || product.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, selectedCategory]);
+
+  const formatPrice = (price: number) => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    })
+      .format(price)
+      .replace("Rp", "Rp ");
+  };
+
+  const formatDL = (dl: number) => {
+    return dl % 1 === 0 ? dl.toString() : dl.toFixed(2);
+  };
+
+  const getDisplayPrice = (product: Product) => {
+    if (product.priceMode === "IDR_ONLY" || product.priceMode === "BOTH") {
+      return (
+        <span className="text-xl font-black text-emerald-600">
+          {formatPrice(product.priceIdr || 0)}
+        </span>
+      );
+    }
+    return (
+      <span className="text-xl font-black text-amber-500">
+        {product.priceDl} DL
+      </span>
+    );
+  };
+
+  return (
+    <main className="min-h-screen bg-[#FDFDFF]">
+      {/* 1. HERO & PROFILE SECTION */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
+        <section className="bg-white rounded-[2.5rem] border border-zinc-100 shadow-sm overflow-hidden mb-12">
+          <CardContent className="p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            {isAuthenticated && user ? (
+              <>
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16 border-2 border-emerald-500 p-1">
+                    <AvatarImage
+                      src={
+                        user.avatar ||
+                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
+                      }
+                    />
+                    <AvatarFallback>{user.username}</AvatarFallback>
+                  </Avatar>
+                  <div className="shrink-0">
+                    <h2 className="text-xl font-bold text-zinc-900 leading-none">
+                      {user.username}
+                    </h2>
+                    <p className="text-sm text-zinc-500 mt-1">{user.role}</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 bg-zinc-50 px-8 py-4 rounded-2xl border border-zinc-100">
+                  <div className="flex flex-col items-center md:items-start">
+                    <div className="flex items-center gap-2 text-zinc-500 mb-1">
+                      <Wallet className="w-4 h-4" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">
+                        Saldo Dompet
+                      </span>
+                    </div>
+                    <span className="text-xl font-black text-emerald-600">
+                      <AnimatedNumber
+                        value={user.balance}
+                        formatter={formatPrice}
+                        showDelta
+                      />
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center md:items-start border-l-0 md:border-l md:pl-12 border-zinc-200">
+                    <div className="flex items-center gap-2 text-zinc-500 mb-1">
+                      <Gamepad2 className="w-4 h-4" />
+                      <span className="text-xs font-semibold uppercase tracking-wider">
+                        Growtopia DL
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-black text-zinc-900">
+                        <AnimatedNumber
+                          value={user.dl}
+                          formatter={formatDL}
+                          showDelta
+                        />{" "}
+                        DL
+                      </span>
+                      <Image
+                        src="/DL.png"
+                        alt="Growtopia"
+                        width={24}
+                        height={24}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Link href="/profile">
+                  <Button className="rounded-2xl px-8 py-6 bg-zinc-900 hover:bg-zinc-800 text-white font-bold group">
+                    Buka Profil
+                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6">
+                <div className="space-y-2 text-center md:text-left">
+                  <h2 className="text-3xl font-black text-zinc-900 tracking-tight">
+                    SELAMAT DATANG DI <br />
+                    <span className="text-emerald-500">ANJAYSTORE.</span>
+                  </h2>
+                  <p className="text-zinc-500 font-medium max-w-md">
+                    Tempat terbaik untuk memenuhi kebutuhan Growtopia kamu.
+                    Proxy, SOCKS5, dan banyak lagi tersedia sekarang!
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <Link href="/login">
+                    <Button
+                      variant="outline"
+                      className="rounded-2xl px-10 py-7 border-2 border-zinc-200 font-black text-base hover:bg-zinc-50"
+                    >
+                      MASUK
+                    </Button>
+                  </Link>
+                  <Link href="/login?tab=register">
+                    <Button className="rounded-2xl px-10 py-7 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base shadow-lg shadow-emerald-100">
+                      DAFTAR SEKARANG
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </section>
+
+        {/* 2. SEARCH & CATEGORIES */}
+        <section className="mb-12 space-y-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <h3 className="text-3xl font-black text-zinc-900 tracking-tighter uppercase shrink-0">
+              Katalog <br />
+              <span className="text-emerald-500">Produk Kami</span>
+            </h3>
+
+            <div className="relative grow group max-w-xl">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-300 group-focus-within:text-emerald-500 transition-colors" />
+              <Input
+                placeholder="Cari item spesial kamu di sini..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-14 rounded-3xl py-8 border-2 border-zinc-100 focus:border-emerald-500 focus:ring-0 shadow-lg shadow-zinc-50 placeholder:text-zinc-300 font-medium transition-all"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-2">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={cn(
+                  "px-6 py-3 rounded-full text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap",
+                  selectedCategory === cat
+                    ? "bg-emerald-500 text-white shadow-xl shadow-emerald-200"
+                    : "bg-white text-zinc-400 border border-zinc-100 hover:bg-zinc-50 hover:text-zinc-900",
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* 3. PRODUCT GRID */}
+        <section id="products-section" className="space-y-8">
+          {/* Loading State */}
+          {productsLoading && (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="w-10 h-10 text-emerald-500 animate-spin" />
+            </div>
+          )}
+
+          {/* Empty State */}
+          {!productsLoading && filteredProducts.length === 0 && (
+            <div className="flex flex-col items-center justify-center h-64 text-zinc-400">
+              <Package className="w-16 h-16 mb-4 opacity-20" />
+              <p className="font-black text-lg">Belum ada produk</p>
+              <p className="text-sm mt-1">Produk sedang disiapkan untukmu.</p>
+            </div>
+          )}
+
+          {/* Product Grid */}
+          {!productsLoading && filteredProducts.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
+              {filteredProducts.map((product) => (
+                <Drawer key={product.id}>
+                  <DrawerTrigger asChild>
+                    <Card
+                      onClick={() => setSelectedProduct(product)}
+                      className="group cursor-pointer border border-zinc-100 shadow-sm hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden bg-white flex flex-col h-full"
+                    >
+                      <div className="aspect-square relative overflow-hidden bg-zinc-50 shrink-0">
+                        {product.image ? (
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-zinc-50">
+                            <Package className="w-10 h-10 text-zinc-200" />
+                          </div>
+                        )}
+
+                        {/* Badge Layers */}
+                        <div className="absolute top-2 left-2 flex flex-col gap-1.5 z-10">
+                          {product.stock === 0 && (
+                            <span className="bg-zinc-900/80 backdrop-blur-md text-white text-[8px] font-black px-2 py-1 rounded-lg">
+                              OUT OF STOCK
+                            </span>
+                          )}
+                          {product.stock > 0 && product.stock <= 5 && (
+                            <span className="bg-amber-400 text-amber-950 text-[8px] font-black px-2 py-1 rounded-lg">
+                              LIMIT STOK
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
+                      </div>
+
+                      <CardContent className="p-3 md:p-4 flex flex-col grow">
+                        <p className="text-[9px] text-zinc-400 font-bold mb-1 uppercase tracking-wider">
+                          {product.category}
+                        </p>
+                        <h4 className="font-bold text-zinc-800 text-sm md:text-base leading-snug line-clamp-2 mb-2 group-hover:text-emerald-600 transition-colors">
+                          {product.name}
+                        </h4>
+
+                        <div className="mt-auto pt-2">
+                          <div className="flex flex-col gap-0.5">
+                            {(product.priceMode === "IDR_ONLY" ||
+                              product.priceMode === "BOTH") &&
+                              product.priceIdr && (
+                                <span className="text-emerald-600 font-black text-sm md:text-lg leading-tight">
+                                  {formatPrice(product.priceIdr)}
+                                </span>
+                              )}
+                            {(product.priceMode === "DL_ONLY" ||
+                              product.priceMode === "BOTH") &&
+                              product.priceDl && (
+                                <span className="text-amber-500 font-black text-[10px] md:text-xs">
+                                  {product.priceDl} DL
+                                </span>
+                              )}
+                          </div>
+
+                          <div className="mt-3 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                              <span className="text-[10px] text-zinc-400 font-medium">
+                                Stok: {product.stock}
+                              </span>
+                            </div>
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              disabled={product.stock === 0}
+                              className="rounded-xl w-8 h-8 md:w-9 md:h-9 bg-zinc-50 border-zinc-100 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const currency =
+                                  product.priceMode === "DL_ONLY"
+                                    ? "DL"
+                                    : "IDR";
+                                addToCart(
+                                  {
+                                    id: product.id,
+                                    name: product.name,
+                                    category: product.category,
+                                    priceIdr: product.priceIdr,
+                                    priceDl: product.priceDl,
+                                    priceMode: product.priceMode,
+                                    image: product.image,
+                                    description: product.description || "",
+                                    stock: product.stock,
+                                  },
+                                  currency,
+                                );
+                                setIsCartOpen(true);
+                              }}
+                            >
+                              <PlusCircle className="size-4 md:size-5" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </DrawerTrigger>
+                  <DrawerContent className="p-6 focus:outline-none">
+                    {selectedProduct && selectedProduct.id === product.id && (
+                      <div className="max-w-md mx-auto w-full">
+                        <DrawerHeader className="px-0">
+                          <DrawerTitle className="text-2xl font-black text-zinc-900 leading-tight">
+                            {selectedProduct.name}
+                          </DrawerTitle>
+                          <div className="mt-2">
+                            {getDisplayPrice(selectedProduct)}
+                          </div>
+                        </DrawerHeader>
+
+                        <div className="relative aspect-video w-full rounded-2xl overflow-hidden my-4 shadow-lg bg-zinc-100">
+                          {selectedProduct.image ? (
+                            <Image
+                              src={selectedProduct.image}
+                              alt={selectedProduct.name}
+                              fill
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="w-16 h-16 text-zinc-300" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="space-y-4">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="px-3 py-1 bg-zinc-100 text-zinc-600 text-[10px] font-bold rounded-full uppercase">
+                              {selectedProduct.category}
+                            </span>
+                            {selectedProduct.stock === 0 && (
+                              <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold rounded-full uppercase italic">
+                                Stok Habis
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
+                            <h5 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">
+                              Deskripsi Produk
+                            </h5>
+                            <p className="text-sm text-zinc-600 leading-relaxed">
+                              {selectedProduct.description ||
+                                "Item spesial untuk menemani perjalanan Growtopia kamu."}
+                            </p>
+                          </div>
+
+                          <Button
+                            disabled={selectedProduct.stock === 0}
+                            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-8 rounded-2xl text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 transition-all active:scale-95"
+                            onClick={() => {
+                              const currency =
+                                selectedProduct.priceMode === "DL_ONLY"
+                                  ? "DL"
+                                  : "IDR";
+                              addToCart(
+                                {
+                                  id: selectedProduct.id,
+                                  name: selectedProduct.name,
+                                  category: selectedProduct.category,
+                                  priceIdr: selectedProduct.priceIdr,
+                                  priceDl: selectedProduct.priceDl,
+                                  priceMode: selectedProduct.priceMode,
+                                  image: selectedProduct.image,
+                                  description:
+                                    selectedProduct.description || "",
+                                  stock: selectedProduct.stock,
+                                },
+                                currency,
+                              );
+                              setIsCartOpen(true);
+                            }}
+                          >
+                            TAMBAHKAN KE KERANJANG
+                            <ArrowRight className="w-6 h-6" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </DrawerContent>
+                </Drawer>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}
