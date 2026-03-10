@@ -710,6 +710,7 @@ const Navbar = () => {
                           width={40}
                           height={40}
                           className="rounded-xl object-cover w-full h-full"
+                          unoptimized
                         />
                       </div>
                       <div className="text-left hidden lg:block pr-2">
@@ -741,6 +742,7 @@ const Navbar = () => {
                               width={48}
                               height={48}
                               className="object-cover w-full h-full"
+                              unoptimized
                             />
                           </div>
                           <div className="overflow-hidden">
@@ -748,9 +750,7 @@ const Navbar = () => {
                               {user?.username}
                             </p>
                             <p className="text-[11px] font-bold text-emerald-500 leading-tight mt-0.5">
-                              {user?.role === "ADMIN"
-                                ? "Administrator"
-                                : "Diamond Member"}
+                              {user?.growid || "Offline"}
                             </p>
                           </div>
                         </div>

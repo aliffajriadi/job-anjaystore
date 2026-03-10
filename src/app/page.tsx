@@ -129,10 +129,7 @@ export default function Home() {
                   <div className="relative">
                     <Avatar className="h-20 w-20 border-4 border-emerald-500/20 p-1 bg-white shadow-lg">
                       <AvatarImage
-                        src={
-                          user.avatar ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
-                        }
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
                       />
                       <AvatarFallback>{user.username}</AvatarFallback>
                     </Avatar>

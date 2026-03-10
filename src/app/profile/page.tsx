@@ -206,10 +206,7 @@ const ProfileContent = () => {
             <div className="w-32 h-32 bg-emerald-50 rounded-[2.5rem] flex items-center justify-center text-emerald-500 ring-8 ring-emerald-50/50">
               <Avatar className="h-16 w-16 border-2 border-emerald-500 p-1">
                 <AvatarImage
-                  src={
-                    user.avatar ||
-                    `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
-                  }
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
                 />
                 <AvatarFallback>{user.username}</AvatarFallback>
               </Avatar>
