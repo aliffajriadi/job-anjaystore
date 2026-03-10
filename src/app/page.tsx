@@ -12,6 +12,7 @@ import {
   Gamepad2,
   PlusCircle,
   ArrowRight,
+  Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +30,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useProducts } from "@/lib/hooks/useProductQueries";
 import { AnimatedNumber } from "./components/AnimatedNumber";
+import { BannerCarousel } from "./components/BannerCarousel";
 
 interface Product {
   id: number;
@@ -105,39 +107,61 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-[#FDFDFF]">
-      {/* 1. HERO & PROFILE SECTION */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 md:py-12">
-        <section className="bg-white rounded-[2.5rem] border border-zinc-100 shadow-sm overflow-hidden mb-12">
-          <CardContent className="p-6 md:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+      {/* 1. CAROUSEL & HERO SECTION */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
+        <BannerCarousel
+          images={[
+            "/banners/proxy.png",
+            "/banners/growtopia.png",
+            "/banners/bot.png",
+          ]}
+        />
+
+        <section className="group relative bg-white rounded-[3rem] border border-zinc-100 shadow-2xl shadow-zinc-200/50 overflow-hidden mb-16 transition-all hover:shadow-emerald-500/5">
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -mr-48 -mt-48 group-hover:bg-emerald-500/10 transition-colors" />
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -ml-32 -mb-32" />
+
+          <CardContent className="relative p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-10">
             {isAuthenticated && user ? (
               <>
-                <div className="flex items-center gap-4">
-                  <Avatar className="h-16 w-16 border-2 border-emerald-500 p-1">
-                    <AvatarImage
-                      src={
-                        user.avatar ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
-                      }
-                    />
-                    <AvatarFallback>{user.username}</AvatarFallback>
-                  </Avatar>
+                <div className="flex items-center gap-6">
+                  <div className="relative">
+                    <Avatar className="h-20 w-20 border-4 border-emerald-500/20 p-1 bg-white shadow-lg">
+                      <AvatarImage
+                        src={
+                          user.avatar ||
+                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`
+                        }
+                      />
+                      <AvatarFallback>{user.username}</AvatarFallback>
+                    </Avatar>
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-emerald-500 rounded-full border-4 border-white flex items-center justify-center">
+                      <Zap className="w-3 h-3 text-white fill-white" />
+                    </div>
+                  </div>
                   <div className="shrink-0">
-                    <h2 className="text-xl font-bold text-zinc-900 leading-none">
+                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500 mb-1">
+                      Welcome Back
+                    </p>
+                    <h2 className="text-2xl font-black text-zinc-900 leading-none">
                       {user.username}
                     </h2>
-                    <p className="text-sm text-zinc-500 mt-1">{user.role}</p>
+                    <p className="text-sm font-medium text-zinc-400 mt-1 uppercase tracking-widest">
+                      {user.role} Account
+                    </p>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center justify-center gap-6 md:gap-12 bg-zinc-50 px-8 py-4 rounded-2xl border border-zinc-100">
+                <div className="flex flex-wrap items-center justify-center gap-6 md:gap-16 bg-zinc-50/50 backdrop-blur-sm px-10 py-6 rounded-[2rem] border border-zinc-100 shadow-sm">
                   <div className="flex flex-col items-center md:items-start">
-                    <div className="flex items-center gap-2 text-zinc-500 mb-1">
+                    <div className="flex items-center gap-2 text-zinc-400 mb-2">
                       <Wallet className="w-4 h-4" />
-                      <span className="text-xs font-semibold uppercase tracking-wider">
-                        Saldo Dompet
+                      <span className="text-[10px] font-black uppercase tracking-widest">
+                        Total Balance
                       </span>
                     </div>
-                    <span className="text-xl font-black text-emerald-600">
+                    <span className="text-2xl font-black text-zinc-900">
                       <AnimatedNumber
                         value={user.balance}
                         formatter={formatPrice}
@@ -145,63 +169,74 @@ export default function Home() {
                       />
                     </span>
                   </div>
-                  <div className="flex flex-col items-center md:items-start border-l-0 md:border-l md:pl-12 border-zinc-200">
-                    <div className="flex items-center gap-2 text-zinc-500 mb-1">
+                  <div className="flex flex-col items-center md:items-start border-l-0 md:border-l md:pl-16 border-zinc-200">
+                    <div className="flex items-center gap-2 text-zinc-400 mb-2">
                       <Gamepad2 className="w-4 h-4" />
-                      <span className="text-xs font-semibold uppercase tracking-wider">
+                      <span className="text-[10px] font-black uppercase tracking-widest">
                         Growtopia DL
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl font-black text-zinc-900">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl font-black text-amber-500">
                         <AnimatedNumber
                           value={user.dl}
                           formatter={formatDL}
                           showDelta
                         />{" "}
-                        DL
+                        <span className="text-zinc-400 text-sm align-middle ml-1">
+                          DL
+                        </span>
                       </span>
-                      <Image
-                        src="/DL.png"
-                        alt="Growtopia"
-                        width={24}
-                        height={24}
-                      />
+                      <div className="p-1 bg-amber-50 rounded-lg border border-amber-100">
+                        <Image
+                          src="/DL.png"
+                          alt="Growtopia"
+                          width={24}
+                          height={24}
+                          className="drop-shadow-sm"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <Link href="/profile">
-                  <Button className="rounded-2xl px-8 py-6 bg-zinc-900 hover:bg-zinc-800 text-white font-bold group">
-                    Buka Profil
-                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  <Button className="rounded-2xl px-8 py-7 bg-zinc-900 hover:bg-zinc-800 text-white font-black group shadow-xl shadow-zinc-200 transition-all active:scale-95">
+                    BUKA PROFIL
+                    <ChevronRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
                   </Button>
                 </Link>
               </>
             ) : (
-              <div className="flex flex-col md:flex-row items-center justify-between w-full gap-6">
-                <div className="space-y-2 text-center md:text-left">
-                  <h2 className="text-3xl font-black text-zinc-900 tracking-tight">
-                    SELAMAT DATANG DI <br />
-                    <span className="text-emerald-500">ANJAYSTORE.</span>
+              <div className="flex flex-col md:flex-row items-center justify-between w-full gap-8 py-4">
+                <div className="space-y-6 text-center md:text-left max-w-2xl">
+                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 mb-2 mx-auto md:mx-0 shadow-sm">
+                    <Zap className="w-4 h-4 fill-emerald-600 animate-pulse" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      Premium Marketplace
+                    </span>
+                  </div>
+                  <h2 className="text-4xl md:text-7xl font-black text-zinc-900 tracking-tight leading-none transition-all pt-2">
+                    <span className="bg-emerald-500 text-white scale-125">BELANJA {" "}</span>
+                     ITEM <br />
+                    <Image src="/gtlogo.png" alt="Growtopia" width={300} height={300} className="drop-shadow-sm justify-center items-center md:ps-20 md md:scale-150" />
+                    <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-500 to-emerald-400 leading-normal pb-1 block">
+                      TERPERCAYA
+                    </span>
                   </h2>
-                  <p className="text-zinc-500 font-medium max-w-md">
-                    Tempat terbaik untuk memenuhi kebutuhan Growtopia kamu.
-                    Proxy, SOCKS5, dan banyak lagi tersedia sekarang!
+                  <p className="text-zinc-500 font-medium text-lg md:text-xl max-w-lg leading-relaxed">
+                    Akses kebutuhan Growtopia terbaik mulai dari Proxy, SOCKS5,
+                    hingga layanan Bot dalam satu platform yang aman dan instan.
                   </p>
                 </div>
-                <div className="flex gap-3">
+                <div className="shrink-0">
                   <Link href="/login">
-                    <Button
-                      variant="outline"
-                      className="rounded-2xl px-10 py-7 border-2 border-zinc-200 font-black text-base hover:bg-zinc-50"
-                    >
-                      MASUK
-                    </Button>
-                  </Link>
-                  <Link href="/login?tab=register">
-                    <Button className="rounded-2xl px-10 py-7 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base shadow-lg shadow-emerald-100">
-                      DAFTAR SEKARANG
+                    <Button className="group relative overflow-hidden rounded-[2rem] px-14 py-10 bg-zinc-900 hover:bg-zinc-800 text-white font-black text-xl shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] transition-all active:scale-95 hover:-translate-y-1">
+                      <div className="absolute inset-0 bg-linear-to-r from-emerald-500/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="relative flex items-center gap-4">
+                        MULAI SEKARANG
+                        <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+                      </span>
                     </Button>
                   </Link>
                 </div>

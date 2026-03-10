@@ -17,7 +17,6 @@ import {
   Smartphone,
   Headphones,
   Gamepad,
-  Camera,
   Layers,
   Zap,
   Home,
@@ -45,8 +44,10 @@ import Image from "next/image";
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showCategory, setShowCategory] = useState(false);
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   const {
     cart,
@@ -69,8 +70,8 @@ const Navbar = () => {
     { name: "Beranda", href: "/", icon: <Home className="w-4 h-4" /> },
     { name: "Shop", href: "/shop", icon: <LayoutGrid className="w-4 h-4" /> },
     {
-      name: "Track Order",
-      href: "/track",
+      name: "Notification",
+      href: "/notifications",
       icon: <Bell className="w-4 h-4" />,
     },
   ];
@@ -87,10 +88,10 @@ const Navbar = () => {
       icon: <Gamepad className="w-5 h-5 text-zinc-500" />,
     },
     {
-      name: "Social Media",
-      icon: <Camera className="w-5 h-5 text-pink-500" />,
+      name: "Proxy & SOCKS5",
+      icon: <Smartphone className="w-5 h-5 text-pink-500" />,
     },
-    { name: "Streaming", icon: <Layers className="w-5 h-5 text-red-500" /> },
+    { name: "App Premium", icon: <Layers className="w-5 h-5 text-red-500" /> },
     {
       name: "Software",
       icon: <Headphones className="w-5 h-5 text-purple-500" />,
@@ -110,6 +111,7 @@ const Navbar = () => {
     // Wrap in setTimeout to avoid synchronous state update lint error
     const timer = setTimeout(() => {
       setShowCategory(false);
+      setShowUserMenu(false);
     }, 0);
     return () => clearTimeout(timer);
   }, [pathname]);
@@ -122,6 +124,12 @@ const Navbar = () => {
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setShowCategory(false);
+      }
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowUserMenu(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -385,7 +393,7 @@ const Navbar = () => {
                               Bayar IDR
                             </span>
                           </button>
-                          <button
+                          <Button
                             type="button"
                             onClick={() => setCheckoutCurrency("DL")}
                             className={cn(
@@ -401,7 +409,7 @@ const Navbar = () => {
                             <span className="text-[10px] text-zinc-400 font-medium">
                               Bayar DL
                             </span>
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     )}
@@ -534,10 +542,8 @@ const Navbar = () => {
       {/* DESKTOP NAVBAR - Hidden on Mobile */}
       <nav
         className={cn(
-          "sticky top-0 z-50 w-full transition-all duration-300",
-          isScrolled
-            ? "bg-white/90 backdrop-blur-xl border-b py-2 shadow-sm"
-            : "bg-white border-b py-4",
+          "sticky top-0 z-50 w-full bg-white border-b py-4",
+          isScrolled && "shadow-sm",
         )}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -547,7 +553,7 @@ const Navbar = () => {
               href="/"
               className="group flex items-center gap-2 text-2xl font-black tracking-tighter text-zinc-900 shrink-0"
             >
-              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white transform group-hover:rotate-12 transition-transform duration-300 shadow-[0_4px_10px_rgba(16,185,129,0.3)]">
+              <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-[0_4px_10px_rgba(16,185,129,0.3)]">
                 <Zap className="w-6 h-6 fill-white" />
               </div>
               <span className="block">
@@ -595,7 +601,7 @@ const Navbar = () => {
                 {showCategory && (
                   <div
                     onMouseLeave={() => setShowCategory(false)}
-                    className="absolute top-full left-0 w-64 bg-white rounded-2xl shadow-2xl border border-zinc-100 p-2 mt-0 transform origin-top animate-in fade-in zoom-in-95 duration-200"
+                    className="absolute top-full left-0 w-64 bg-white rounded-2xl shadow-2xl border border-zinc-100 p-2 mt-0"
                   >
                     <div className="grid gap-1">
                       {categories.map((cat) => (
@@ -640,10 +646,15 @@ const Navbar = () => {
               <Button
                 variant="ghost"
                 onClick={() => setIsCartOpen(true)}
-                className="relative hidden sm:flex items-center gap-2 pr-4 pl-3 py-2 rounded-full bg-zinc-50 hover:bg-zinc-100 border border-zinc-100/50 group"
+                className="relative flex items-center gap-2 px-2 sm:pr-4 sm:pl-3 py-2 rounded-full bg-zinc-50 hover:bg-zinc-100 border border-zinc-100/50 group"
               >
                 <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center border shadow-sm group-hover:scale-110 transition-transform">
                   <ShoppingBag className="w-4 h-4 text-emerald-500" />
+                  {cartCount > 0 && (
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[8px] font-black rounded-full flex items-center justify-center xl:hidden">
+                      {cartCount}
+                    </div>
+                  )}
                 </div>
                 <div className="text-left hidden xl:block">
                   <p className="text-[9px] font-black text-zinc-400 uppercase leading-none mb-0.5">
@@ -656,45 +667,146 @@ const Navbar = () => {
               </Button>
 
               {isAuthenticated ? (
-                <div className="flex items-center gap-2 pl-3">
-                  <button
-                    onClick={handleProxyClick}
-                    className="hidden lg:flex flex-col items-end mr-1 group"
-                  >
-                    <p className="text-[10px] font-black text-zinc-400 uppercase leading-none mb-0.5">
-                      ID: {user?.growid || "None"}
-                    </p>
-                    <p className="text-xs font-black text-emerald-500 leading-none group-hover:underline">
-                      MANAGER PROXY
-                    </p>
-                  </button>
-                  <Link href="/profile">
-                    <div className="w-10 h-10 rounded-xl border-2 border-zinc-200 p-0.5 hover:border-emerald-500 transition-colors cursor-pointer">
-                      <Image
-                        src={
-                          user?.avatar ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`
-                        }
-                        alt="Avatar"
-                        width={40}
-                        height={40}
-                        className="rounded-lg"
-                      />
+                <div className="flex items-center gap-3">
+                  {/* Stats - Desktop Only */}
+                  <div className="hidden xl:flex items-center gap-4 bg-zinc-50 border border-zinc-100 rounded-[1.25rem] px-4 py-1.5">
+                    <div className="flex flex-col items-end">
+                      <p className="text-[9px] font-black text-zinc-400 uppercase leading-none mb-1 tracking-wider">
+                        SALDO IDR
+                      </p>
+                      <p className="text-xs font-black text-zinc-900 leading-none">
+                        {formatPrice(user?.balance || 0)}
+                      </p>
                     </div>
-                  </Link>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={logout}
-                    className="rounded-full text-zinc-400 hover:text-red-500 hover:bg-red-50 hidden md:flex"
-                  >
-                    <LogOut className="w-5 h-5" />
-                  </Button>
+                    <div className="w-px h-6 bg-zinc-200" />
+                    <div className="flex flex-col items-end">
+                      <p className="text-[9px] font-black text-zinc-400 uppercase leading-none mb-1 tracking-wider">
+                        DIAMOND LOCK
+                      </p>
+                      <p className="text-xs font-black text-amber-500 leading-none">
+                        {((user?.wl || 0) / 100).toFixed(2)} DL
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* User Dropdown */}
+                  <div className="relative" ref={userMenuRef}>
+                    <button
+                      onClick={() => setShowUserMenu(!showUserMenu)}
+                      className={cn(
+                        "flex items-center gap-3 p-1 rounded-[1.25rem] border-2 transition-all group",
+                        showUserMenu
+                          ? "border-emerald-500 bg-emerald-50/50"
+                          : "border-zinc-100 bg-white hover:border-emerald-200",
+                      )}
+                    >
+                      <div className="w-10 h-10 rounded-2xl overflow-hidden border-2 border-white shadow-sm ring-1 ring-zinc-100 p-0.5 group-hover:scale-105 transition-transform bg-white">
+                        <Image
+                          src={
+                            user?.avatar ||
+                            `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`
+                          }
+                          alt="Avatar"
+                          width={40}
+                          height={40}
+                          className="rounded-xl object-cover w-full h-full"
+                        />
+                      </div>
+                      <div className="text-left hidden lg:block pr-2">
+                        <p className="text-sm font-black text-zinc-900 leading-tight truncate max-w-[100px]">
+                          {user?.username}
+                        </p>
+                        <p className="text-[10px] font-bold text-zinc-400 leading-tight uppercase tracking-tight">
+                          {user?.growid || "Offline"}
+                        </p>
+                      </div>
+                      <ChevronDown
+                        className={cn(
+                          "w-4 h-4 text-zinc-400 mr-2 transition-transform hidden lg:block",
+                          showUserMenu && "rotate-180 text-emerald-500",
+                        )}
+                      />
+                    </button>
+
+                    {showUserMenu && (
+                      <div className="absolute top-full right-0 w-64 bg-white rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] border border-zinc-100 p-3 mt-3 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center gap-3 p-3 mb-2 bg-zinc-50 rounded-2xl">
+                          <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center border shadow-sm shrink-0 overflow-hidden">
+                            <Image
+                              src={
+                                user?.avatar ||
+                                `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.username}`
+                              }
+                              alt="Avatar"
+                              width={48}
+                              height={48}
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                          <div className="overflow-hidden">
+                            <p className="text-sm font-black text-zinc-900 leading-tight truncate">
+                              {user?.username}
+                            </p>
+                            <p className="text-[11px] font-bold text-emerald-500 leading-tight mt-0.5">
+                              {user?.role === "ADMIN"
+                                ? "Administrator"
+                                : "Diamond Member"}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-1">
+                          <Link
+                            href="/profile"
+                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-50 transition-colors group"
+                          >
+                            <div className="w-10 h-10 rounded-xl bg-white border flex items-center justify-center text-zinc-500 group-hover:text-emerald-500 group-hover:border-emerald-100 transition-colors">
+                              <User className="w-5 h-5" />
+                            </div>
+                            <span className="text-sm font-bold text-zinc-700">
+                              Profil Saya
+                            </span>
+                          </Link>
+
+                          <button
+                            onClick={handleProxyClick}
+                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-zinc-50 transition-colors group text-left w-full"
+                          >
+                            <div className="w-10 h-10 rounded-xl bg-white border flex items-center justify-center text-zinc-500 group-hover:text-emerald-500 group-hover:border-emerald-100 transition-colors">
+                              <LayoutGrid className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <span className="text-sm font-bold text-zinc-700 block text-left">
+                                Manager Proxy
+                              </span>
+                              <span className="text-[10px] font-medium text-zinc-400 block text-left">
+                                Kelola SOCKS5 kamu
+                              </span>
+                            </div>
+                          </button>
+
+                          <Separator className="my-2 bg-zinc-100" />
+
+                          <button
+                            onClick={logout}
+                            className="flex items-center gap-3 p-3 rounded-2xl hover:bg-red-50 transition-colors group text-left w-full"
+                          >
+                            <div className="w-10 h-10 rounded-xl bg-white border flex items-center justify-center text-zinc-400 group-hover:text-red-500 group-hover:border-red-100 transition-colors">
+                              <LogOut className="w-5 h-5" />
+                            </div>
+                            <span className="text-sm font-bold text-zinc-700 group-hover:text-red-600 transition-colors">
+                              Keluar Layanan
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <Link href="/login">
-                  <Button className="rounded-xl px-6 py-5 bg-zinc-900 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-zinc-100 transition-all">
-                    MASUK AKUN
+                  <Button className="rounded-2xl px-8 py-6 bg-zinc-900 hover:bg-emerald-500 text-white font-black text-sm shadow-xl shadow-zinc-200 transition-all active:scale-95">
+                    MASUK
                   </Button>
                 </Link>
               )}
@@ -742,23 +854,6 @@ const Navbar = () => {
               Katalog
             </span>
           </Link>
-
-          <button
-            onClick={() => setIsCartOpen(true)}
-            className="relative flex flex-col items-center gap-1 py-2 px-4 group"
-          >
-            <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-14 h-14 bg-emerald-500 text-white rounded-full flex items-center justify-center shadow-[0_10px_25px_rgba(16,185,129,0.4)] border-4 border-zinc-900 group-active:scale-90 transition-all duration-300">
-              <ShoppingBag className="w-6 h-6 fill-white" />
-              {cartCount > 0 && (
-                <div className="absolute -top-1 -right-1 w-6 h-6 bg-white text-emerald-600 text-[10px] font-black rounded-full border-2 border-emerald-500 flex items-center justify-center shadow-sm">
-                  {cartCount}
-                </div>
-              )}
-            </div>
-            <span className="text-[10px] font-bold uppercase tracking-tight mt-2 text-zinc-500 group-hover:text-emerald-400">
-              Cart
-            </span>
-          </button>
 
           <Link
             href="/notifications"

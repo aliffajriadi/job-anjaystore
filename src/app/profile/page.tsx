@@ -38,7 +38,13 @@ interface ErrorResponse {
 }
 
 const ProfileContent = () => {
-  const { user, logout, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const {
+    user,
+    logout,
+    isAuthenticated,
+    updateUser,
+    isLoading: isAuthLoading,
+  } = useAuth();
   const { data: profile, isLoading: isProfileLoading } = useUserProfile();
 
   const updateProfileMutation = useUpdateProfileMutation();
@@ -73,10 +79,15 @@ const ProfileContent = () => {
     if (profileGrowid) {
       const timer = setTimeout(() => {
         setGrowid(profileGrowid);
+
+        // Also sync to global auth state if it differs
+        if (profileGrowid !== user?.growid) {
+          updateUser({ growid: profileGrowid });
+        }
       }, 0);
       return () => clearTimeout(timer);
     }
-  }, [profileGrowid]);
+  }, [profileGrowid, user?.growid, updateUser]);
 
   const formatDate = (date?: string) => {
     if (!date) return "-";
@@ -96,6 +107,8 @@ const ProfileContent = () => {
       {
         onSuccess: () => {
           setMessage({ type: "success", text: "GrowID berhasil diperbarui!" });
+          // Update global auth state to reflect changes in Navbar immediately
+          updateUser({ growid });
         },
         onError: (err: Error) => {
           const apiErr = err as unknown as ErrorResponse;

@@ -6,7 +6,6 @@ import {
   Search,
   ShoppingBag,
   ChevronRight,
-  Tag,
   TrendingUp,
   Loader2,
   Package,
@@ -119,12 +118,7 @@ export default function ShopPage() {
       <div className="bg-white border-b sticky top-[68px] md:top-[80px] z-30 pt-4 md:pt-6">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex flex-col gap-4 pb-4">
-            <div className="flex items-center justify-between">
-              <h1 className="text-2xl md:text-3xl font-black text-zinc-900 tracking-tight flex items-center gap-2">
-                <Tag className="w-6 h-6 text-emerald-500 fill-emerald-500" />
-                SHOP <span className="text-emerald-500 uppercase">Katalog</span>
-              </h1>
-            </div>
+            
 
             {/* SEARCH & SORT */}
             <div className="flex gap-2">
