@@ -43,6 +43,8 @@ import Image from "next/image";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const [showCategory, setShowCategory] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const pathname = usePathname();
@@ -100,11 +102,24 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+
+      setIsScrolled(currentScrollY > 20);
+
+      if (currentScrollY < 10) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setIsVisible(false);
+      } else if (currentScrollY < lastScrollY) {
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
     };
-    window.addEventListener("scroll", handleScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   // Tutup dropdown saat pindah halaman
   useEffect(() => {
@@ -542,8 +557,9 @@ const Navbar = () => {
       {/* DESKTOP NAVBAR - Hidden on Mobile */}
       <nav
         className={cn(
-          "sticky top-0 z-50 w-full bg-white border-b py-4",
+          "sticky top-0 z-50 w-full bg-white border-b py-4 transition-transform duration-300",
           isScrolled && "shadow-sm",
+          !isVisible && "-translate-y-full",
         )}
       >
         <div className="max-w-7xl mx-auto px-4 md:px-6">
@@ -551,7 +567,7 @@ const Navbar = () => {
             {/* Logo */}
             <Link
               href="/"
-              className="group flex items-center gap-2 text-2xl font-black tracking-tighter text-zinc-900 shrink-0"
+              className="group flex items-center gap-2 text-md md:text-2xl font-black tracking-tighter text-zinc-900 shrink-0"
             >
               <div className="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-[0_4px_10px_rgba(16,185,129,0.3)]">
                 <Zap className="w-6 h-6 fill-white" />
@@ -816,7 +832,12 @@ const Navbar = () => {
       </nav>
 
       {/* MOBILE NAVBAR */}
-      <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md">
+      <div
+        className={cn(
+          "md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md transition-all duration-300",
+          !isVisible && "translate-y-[150%] opacity-0",
+        )}
+      >
         <div className="flex items-center justify-between bg-zinc-900/95 backdrop-blur-2xl border border-white/10 p-2 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
           <Link
             href="/"

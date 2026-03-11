@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import NextTopLoader from "nextjs-toploader";
 import Navbar from "./components/nav";
 import Footer from "./components/Footer";
+import AdModal from "./components/AdModal";
 import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "./components/QueryProvider";
@@ -62,6 +63,7 @@ export default function RootLayout({
               <Navbar />
               <main className="grow pb-24 md:pb-0">{children}</main>
               <Footer />
+              <AdModal />
               <Toaster position="top-right" />
             </CartProvider>
           </AuthProvider>
