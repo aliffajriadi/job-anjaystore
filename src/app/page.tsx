@@ -31,6 +31,7 @@ import { useCart } from "@/context/CartContext";
 import { useProducts } from "@/lib/hooks/useProductQueries";
 import { AnimatedNumber } from "./components/AnimatedNumber";
 import { BannerCarousel } from "./components/BannerCarousel";
+import { useGrowtopiaPlayers } from "@/lib/hooks/useGrowtopia";
 
 interface Product {
   id: number;
@@ -49,7 +50,7 @@ export default function Home() {
   const { user, isAuthenticated } = useAuth();
   const { addToCart, setIsCartOpen } = useCart();
   const { data: products = [], isLoading: productsLoading } = useProducts();
-
+  const { data: playersGT, isLoading: playersLoading } = useGrowtopiaPlayers();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -119,9 +120,26 @@ export default function Home() {
 
         <section className="group relative bg-white rounded-[3rem] border border-zinc-100 shadow-2xl shadow-zinc-200/50 overflow-hidden mb-16 transition-all hover:shadow-emerald-500/5">
           {/* Decorative Elements */}
+          {playersLoading ? (
+            <p className="text-center">...</p>
+          ) : (
+            <p className="text-center text-2xl font-semibold flex items-center justify-center gap-2">
+              {/* Bulatan Online */}
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+
+              {playersGT?.count}
+
+              <span className="text-emerald-500 text-sm">
+                Players GT Online
+              </span>
+            </p>
+          )}
+
           <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/5 rounded-full blur-3xl -mr-48 -mt-48 group-hover:bg-emerald-500/10 transition-colors" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl -ml-32 -mb-32" />
-
           <CardContent className="relative p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-10">
             {isAuthenticated && user ? (
               <>
@@ -214,9 +232,17 @@ export default function Home() {
                     </span>
                   </div>
                   <h2 className="text-4xl md:text-7xl font-black text-zinc-900 tracking-tight leading-none transition-all pt-2">
-                    <span className="bg-emerald-500 text-white scale-125">BELANJA {" "}</span>
-                     ITEM <br />
-                    <Image src="/gtlogo.png" alt="Growtopia" width={300} height={300} className="drop-shadow-sm justify-center items-center md:ps-20 md md:scale-150" />
+                    <span className="bg-emerald-500 text-white scale-125">
+                      BELANJA{" "}
+                    </span>
+                    ITEM <br />
+                    <Image
+                      src="/gtlogo.png"
+                      alt="Growtopia"
+                      width={300}
+                      height={300}
+                      className="drop-shadow-sm justify-center items-center md:ps-20 md md:scale-150"
+                    />
                     <span className="text-transparent bg-clip-text bg-linear-to-r from-emerald-500 to-emerald-400 leading-normal pb-1 block">
                       TERPERCAYA
                     </span>

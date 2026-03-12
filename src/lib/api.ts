@@ -11,6 +11,8 @@ export const api = axios.create({
   },
 });
 
+
+
 // Interceptor to add auth token
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
@@ -114,6 +116,13 @@ export const notificationApi = {
   },
   delete: async (id: number) => {
     const { data } = await api.delete(`/notifications/${id}`);
+    return data;
+  },
+};
+
+export const growtopiaApi = {
+  getPlayers: async () => {
+    const { data } = await axios.get("https://bvaaweb.vercel.app/api/players");
     return data;
   },
 };
