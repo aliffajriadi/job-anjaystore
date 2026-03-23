@@ -107,7 +107,7 @@ export default function Home() {
     }
     return (
       <span className="text-xl font-black text-amber-500">
-        {(product.priceDl || 0) / 100} DL
+        {(product.priceDl || 0)} DL
       </span>
     );
   };
@@ -391,7 +391,7 @@ export default function Home() {
                               product.priceMode === "BOTH") &&
                               product.priceDl && (
                                 <span className="text-amber-500 font-black text-[10px] md:text-xs">
-                                  {(product.priceDl || 0) / 100} DL
+                                  {(product.priceDl || 0)} DL
                                 </span>
                               )}
                           </div>

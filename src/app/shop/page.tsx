@@ -295,7 +295,7 @@ export default function ShopPage() {
                               product.priceMode === "BOTH") &&
                               product.priceDl && (
                                 <span className="text-yellow-600 font-black text-[10px] md:text-sm">
-                                  {(product.priceDl || 0) / 100} DL
+                                  {(product.priceDl || 0)} DL
                                 </span>
                               )}
                           </div>
@@ -359,7 +359,7 @@ export default function ShopPage() {
                                     selectedProduct.priceMode === "BOTH") &&
                                     selectedProduct.priceDl && (
                                       <p className="text-xl font-black text-yellow-600 flex items-center gap-2">
-                                        {selectedProduct.priceDl / 100}{" "}
+                                        {selectedProduct.priceDl}{" "}
                                         <span className="text-sm">DL</span>
                                       </p>
                                     )}
