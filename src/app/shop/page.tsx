@@ -422,7 +422,7 @@ export default function ShopPage() {
                                   >
                                     {selectedProduct.stock === 0
                                       ? "STOK HABIS"
-                                      : "LIHAT DETAIL & BELI SEKARANG"}
+                                      : "LIHAT DETAIL"}
                                     <ArrowRight className="w-6 h-6" />
                                   </Link>
                                   <DrawerClose asChild>

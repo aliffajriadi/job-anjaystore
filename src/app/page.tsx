@@ -506,7 +506,7 @@ export default function Home() {
                                   href={`/shop/${selectedProduct.id}`}
                                   className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-6 rounded-3xl text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 transition-all active:scale-95 no-underline"
                                 >
-                                  LIHAT DETAIL & BELI SEKARANG
+                                  LIHAT DETAIL
                                   <ArrowRight className="w-6 h-6" />
                                 </Link>
                               </div>
