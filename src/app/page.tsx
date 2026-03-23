@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   ChevronRight,
@@ -10,7 +11,6 @@ import {
   Package,
   Wallet,
   Gamepad2,
-  PlusCircle,
   ArrowRight,
   Zap,
 } from "lucide-react";
@@ -27,7 +27,6 @@ import {
 } from "@/components/ui/drawer";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
-import { useCart } from "@/context/CartContext";
 import { useProducts } from "@/lib/hooks/useProductQueries";
 import { AnimatedNumber } from "./components/AnimatedNumber";
 import { BannerCarousel } from "./components/BannerCarousel";
@@ -48,12 +47,17 @@ interface Product {
 
 export default function Home() {
   const { user, isAuthenticated } = useAuth();
-  const { addToCart, setIsCartOpen } = useCart();
+  const router = useRouter();
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: playersGT, isLoading: playersLoading } = useGrowtopiaPlayers();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Dynamic Categories
   const categories = useMemo(() => {
@@ -76,6 +80,8 @@ export default function Home() {
       return matchesSearch && matchesCategory;
     });
   }, [products, searchQuery, selectedCategory]);
+
+  if (!mounted) return null;
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("id-ID", {
@@ -101,7 +107,7 @@ export default function Home() {
     }
     return (
       <span className="text-xl font-black text-amber-500">
-        {product.priceDl} DL
+        {(product.priceDl || 0) / 100} DL
       </span>
     );
   };
@@ -385,7 +391,7 @@ export default function Home() {
                               product.priceMode === "BOTH") &&
                               product.priceDl && (
                                 <span className="text-amber-500 font-black text-[10px] md:text-xs">
-                                  {product.priceDl} DL
+                                  {(product.priceDl || 0) / 100} DL
                                 </span>
                               )}
                           </div>
@@ -400,119 +406,90 @@ export default function Home() {
                             <Button
                               size="icon"
                               variant="secondary"
-                              disabled={product.stock === 0}
                               className="rounded-xl w-8 h-8 md:w-9 md:h-9 bg-zinc-50 border-zinc-100 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const currency =
-                                  product.priceMode === "DL_ONLY"
-                                    ? "DL"
-                                    : "IDR";
-                                addToCart(
-                                  {
-                                    id: product.id,
-                                    name: product.name,
-                                    category: product.category,
-                                    priceIdr: product.priceIdr,
-                                    priceDl: product.priceDl,
-                                    priceMode: product.priceMode,
-                                    image: product.image,
-                                    description: product.description || "",
-                                    stock: product.stock,
-                                  },
-                                  currency,
-                                );
-                                setIsCartOpen(true);
-                              }}
                             >
-                              <PlusCircle className="size-4 md:size-5" />
+                              <ChevronRight className="size-4 md:size-5" />
                             </Button>
                           </div>
                         </div>
                       </CardContent>
                     </Card>
                   </DrawerTrigger>
-                  <DrawerContent className="p-6 focus:outline-none">
-                    {selectedProduct && selectedProduct.id === product.id && (
-                      <div className="max-w-md mx-auto w-full">
-                        <DrawerHeader className="px-0">
-                          <DrawerTitle className="text-2xl font-black text-zinc-900 leading-tight">
-                            {selectedProduct.name}
-                          </DrawerTitle>
-                          <div className="mt-2">
-                            {getDisplayPrice(selectedProduct)}
-                          </div>
-                        </DrawerHeader>
-
-                        <div className="relative aspect-video w-full rounded-2xl overflow-hidden my-4 shadow-lg bg-zinc-100">
-                          {selectedProduct.image ? (
-                            <Image
-                              src={selectedProduct.image}
-                              alt={selectedProduct.name}
-                              fill
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Package className="w-16 h-16 text-zinc-300" />
+                  <DrawerContent className="focus:outline-none">
+                    <div className="mx-auto w-12 h-1.5 shrink-0 rounded-full bg-zinc-300 my-4" />
+                    <div className="p-6 max-h-[85vh] overflow-y-auto no-scrollbar">
+                      {selectedProduct && selectedProduct.id === product.id && (
+                        <div className="max-w-4xl mx-auto w-full pb-8">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                            <div className="relative aspect-video md:aspect-square w-full rounded-2xl overflow-hidden shadow-lg bg-zinc-100 border">
+                              {selectedProduct.image ? (
+                                <Image
+                                  src={selectedProduct.image}
+                                  alt={selectedProduct.name}
+                                  fill
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center">
+                                  <Package className="w-16 h-16 text-zinc-300" />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
 
-                        <div className="space-y-4">
-                          <div className="flex flex-wrap items-center gap-2">
-                            <span className="px-3 py-1 bg-zinc-100 text-zinc-600 text-[10px] font-bold rounded-full uppercase">
-                              {selectedProduct.category}
-                            </span>
-                            {selectedProduct.stock === 0 && (
-                              <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold rounded-full uppercase italic">
-                                Stok Habis
-                              </span>
-                            )}
+                            <div className="space-y-6">
+                              <DrawerHeader className="px-0 pt-0">
+                                <DrawerTitle className="text-3xl font-black text-zinc-900 leading-tight">
+                                  {selectedProduct.name}
+                                </DrawerTitle>
+                                <div className="mt-2">
+                                  {getDisplayPrice(selectedProduct)}
+                                </div>
+                              </DrawerHeader>
+
+                              <div className="space-y-4">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="px-3 py-1 bg-zinc-100 text-zinc-600 text-[10px] font-bold rounded-full uppercase">
+                                    {selectedProduct.category}
+                                  </span>
+                                  {selectedProduct.stock === 0 && (
+                                    <span className="px-3 py-1 bg-red-50 text-red-600 text-[10px] font-bold rounded-full uppercase italic">
+                                      Stok Habis
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
+                                  <h5 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">
+                                    Deskripsi Produk
+                                  </h5>
+                                  <p className="text-sm text-zinc-600 leading-relaxed">
+                                    {(() => {
+                                      const text =
+                                        selectedProduct.description ||
+                                        "Item spesial untuk menemani perjalanan Growtopia kamu.";
+
+                                      return text.length > 50
+                                        ? text.slice(0, 50) + "..."
+                                        : text;
+                                    })()}
+                                  </p>
+                                </div>
+
+                                <Button
+                                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-8 rounded-2xl text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 transition-all active:scale-95"
+                                  onClick={() => {
+                                    router.push(`/shop/${selectedProduct.id}`);
+                                  }}
+                                >
+                                  LIHAT DETAIL PRODUK
+                                  <ArrowRight className="w-6 h-6" />
+                                </Button>
+                              </div>
+                            </div>
                           </div>
-
-                          <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
-                            <h5 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">
-                              Deskripsi Produk
-                            </h5>
-                            <p className="text-sm text-zinc-600 leading-relaxed">
-                              {selectedProduct.description ||
-                                "Item spesial untuk menemani perjalanan Growtopia kamu."}
-                            </p>
-                          </div>
-
-                          <Button
-                            disabled={selectedProduct.stock === 0}
-                            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-8 rounded-2xl text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 transition-all active:scale-95"
-                            onClick={() => {
-                              const currency =
-                                selectedProduct.priceMode === "DL_ONLY"
-                                  ? "DL"
-                                  : "IDR";
-                              addToCart(
-                                {
-                                  id: selectedProduct.id,
-                                  name: selectedProduct.name,
-                                  category: selectedProduct.category,
-                                  priceIdr: selectedProduct.priceIdr,
-                                  priceDl: selectedProduct.priceDl,
-                                  priceMode: selectedProduct.priceMode,
-                                  image: selectedProduct.image,
-                                  description:
-                                    selectedProduct.description || "",
-                                  stock: selectedProduct.stock,
-                                },
-                                currency,
-                              );
-                              setIsCartOpen(true);
-                            }}
-                          >
-                            TAMBAHKAN KE KERANJANG
-                            <ArrowRight className="w-6 h-6" />
-                          </Button>
                         </div>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </DrawerContent>
                 </Drawer>
               ))}

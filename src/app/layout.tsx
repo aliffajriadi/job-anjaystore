@@ -6,7 +6,6 @@ import NextTopLoader from "nextjs-toploader";
 import Navbar from "./components/nav";
 import Footer from "./components/Footer";
 import AdModal from "./components/AdModal";
-import { CartProvider } from "@/context/CartContext";
 import { AuthProvider } from "@/context/AuthContext";
 import QueryProvider from "./components/QueryProvider";
 import { Toaster } from "sonner";
@@ -48,24 +47,22 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
-            <CartProvider>
-              <NextTopLoader
-                color="#10b981"
-                initialPosition={0.08}
-                crawlSpeed={200}
-                height={3}
-                crawl={true}
-                showSpinner={true}
-                easing="ease"
-                speed={200}
-                shadow="0 0 10px #10b981,0 0 5px #10b981"
-              />
-              <Navbar />
-              <main className="grow pb-24 md:pb-0">{children}</main>
-              <Footer />
-              <AdModal />
-              <Toaster position="top-right" />
-            </CartProvider>
+            <NextTopLoader
+              color="#10b981"
+              initialPosition={0.08}
+              crawlSpeed={200}
+              height={3}
+              crawl={true}
+              showSpinner={true}
+              easing="ease"
+              speed={200}
+              shadow="0 0 10px #10b981,0 0 5px #10b981"
+            />
+            <Navbar />
+            <main className="grow pb-24 md:pb-0">{children}</main>
+            <Footer />
+            <AdModal />
+            <Toaster position="top-right" />
           </AuthProvider>
         </QueryProvider>
       </body>

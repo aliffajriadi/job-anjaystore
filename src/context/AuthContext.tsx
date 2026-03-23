@@ -30,20 +30,28 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Wrap initial state from localStorage in setTimeout to avoid synchronous cascading render warning
+    const timer = setTimeout(() => {
+      const savedToken = localStorage.getItem("token");
       const savedUser = localStorage.getItem("user");
-      return savedUser ? (JSON.parse(savedUser) as User) : null;
-    } catch {
-      return null;
-    }
-  });
-  const [token, setToken] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return localStorage.getItem("token");
-  });
-  const [isLoading] = useState(false);
+
+      if (savedToken) setToken(savedToken);
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser));
+        } catch (e) {
+          console.error("Failed to parse user from localStorage", e);
+        }
+      }
+      setIsLoading(false);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
   const router = useRouter();
   const pathname = usePathname();
   const queryClient = useQueryClient();
