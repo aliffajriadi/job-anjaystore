@@ -54,6 +54,7 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState("Semua");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   React.useEffect(() => {
     setMounted(true);
@@ -107,7 +108,7 @@ export default function Home() {
     }
     return (
       <span className="text-xl font-black text-amber-500">
-        {(product.priceDl || 0)} DL
+        {product.priceDl || 0} DL
       </span>
     );
   };
@@ -391,7 +392,7 @@ export default function Home() {
                               product.priceMode === "BOTH") &&
                               product.priceDl && (
                                 <span className="text-amber-500 font-black text-[10px] md:text-xs">
-                                  {(product.priceDl || 0)} DL
+                                  {product.priceDl || 0} DL
                                 </span>
                               )}
                           </div>
@@ -458,32 +459,56 @@ export default function Home() {
                                   )}
                                 </div>
 
-                                <div className="bg-zinc-50 rounded-2xl p-4 border border-zinc-100">
-                                  <h5 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-2">
+                                <div className="bg-zinc-50 rounded-3xl p-6 border border-zinc-100">
+                                  <h5 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-3">
                                     Deskripsi Produk
                                   </h5>
-                                  <p className="text-sm text-zinc-600 leading-relaxed">
+                                  <div className="text-sm text-zinc-600 leading-relaxed">
                                     {(() => {
                                       const text =
                                         selectedProduct.description ||
-                                        "Item spesial untuk menemani perjalanan Growtopia kamu.";
+                                        "Tidak ada deskripsi tersedia.";
+                                      const maxLength = 100;
+                                      const isLong = text.length > maxLength;
 
-                                      return text.length > 50
-                                        ? text.slice(0, 50) + "..."
-                                        : text;
+                                      if (!expanded && isLong) {
+                                        return (
+                                          <span>
+                                            {text.slice(0, maxLength)}...{" "}
+                                            <button
+                                              onClick={() => setExpanded(true)}
+                                              className="text-emerald-500 font-bold hover:underline"
+                                            >
+                                              Baca Selengkapnya
+                                            </button>
+                                          </span>
+                                        );
+                                      }
+
+                                      return (
+                                        <span>
+                                          {text}{" "}
+                                          {isLong && (
+                                            <button
+                                              onClick={() => setExpanded(false)}
+                                              className="text-emerald-500 font-bold hover:underline"
+                                            >
+                                              Sembunyikan
+                                            </button>
+                                          )}
+                                        </span>
+                                      );
                                     })()}
-                                  </p>
+                                  </div>
                                 </div>
 
-                                <Button
-                                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-8 rounded-2xl text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 transition-all active:scale-95"
-                                  onClick={() => {
-                                    router.push(`/shop/${selectedProduct.id}`);
-                                  }}
+                                <Link
+                                  href={`/shop/${selectedProduct.id}`}
+                                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-6 rounded-3xl text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 transition-all active:scale-95 no-underline"
                                 >
-                                  LIHAT DETAIL PRODUK
+                                  LIHAT DETAIL & BELI SEKARANG
                                   <ArrowRight className="w-6 h-6" />
-                                </Button>
+                                </Link>
                               </div>
                             </div>
                           </div>

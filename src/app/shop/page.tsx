@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Search,
@@ -9,6 +10,7 @@ import {
   TrendingUp,
   Loader2,
   Package,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -234,7 +236,10 @@ export default function ShopPage() {
                 <Drawer key={product.id}>
                   <DrawerTrigger asChild>
                     <Card
-                      onClick={() => setSelectedProduct(product)}
+                      onClick={() => {
+                        setSelectedProduct(product);
+                        setExpanded(false);
+                      }}
                       className={cn(
                         "group border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-[2rem] md:rounded-[2.5rem] overflow-hidden bg-white cursor-pointer",
                         product.stock === 0 && "opacity-75",
@@ -295,7 +300,7 @@ export default function ShopPage() {
                               product.priceMode === "BOTH") &&
                               product.priceDl && (
                                 <span className="text-yellow-600 font-black text-[10px] md:text-sm">
-                                  {(product.priceDl || 0)} DL
+                                  {product.priceDl || 0} DL
                                 </span>
                               )}
                           </div>
@@ -317,7 +322,7 @@ export default function ShopPage() {
                       {selectedProduct && selectedProduct.id === product.id && (
                         <div className="max-w-4xl mx-auto w-full">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                            <div className="relative aspect-square w-full rounded-[2.5rem] overflow-hidden shadow-2xl border bg-zinc-100">
+                            <div className="relative aspect-video md:aspect-square w-full rounded-2xl overflow-hidden shadow-lg bg-zinc-100 border">
                               {selectedProduct.image ? (
                                 <Image
                                   src={selectedProduct.image}
@@ -411,18 +416,15 @@ export default function ShopPage() {
                                 </div>
 
                                 <div className="flex flex-col gap-3 pt-4">
-                                  <Button
-                                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-8 rounded-3xl text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
-                                    onClick={() => {
-                                      router.push(
-                                        `/shop/${selectedProduct.id}`,
-                                      );
-                                    }}
+                                  <Link
+                                    href={`/shop/${selectedProduct.id}`}
+                                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-black py-6 rounded-3xl text-lg shadow-xl shadow-emerald-100 flex items-center justify-center gap-3 transition-all active:scale-95 no-underline"
                                   >
                                     {selectedProduct.stock === 0
                                       ? "STOK HABIS"
                                       : "LIHAT DETAIL & BELI SEKARANG"}
-                                  </Button>
+                                    <ArrowRight className="w-6 h-6" />
+                                  </Link>
                                   <DrawerClose asChild>
                                     <Button
                                       variant="outline"
