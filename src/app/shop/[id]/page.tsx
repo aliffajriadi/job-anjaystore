@@ -315,7 +315,7 @@ export default function ProductDetailPage() {
                           formatPrice(product.priceIdr || 0)
                         ) : (
                           <div className="flex items-center gap-1.5">
-                            {(product.priceDl || 0) / 100}
+                            {(product.priceDl || 0) }
                             <Image
                               src="/DL.png"
                               alt="DL"
@@ -383,7 +383,7 @@ export default function ProductDetailPage() {
                       >
                         {selectedCurrency === "IDR"
                           ? formatPrice(totalPrice)
-                          : `${(totalPrice / 100).toFixed(2)} DL`}
+                          : `${(totalPrice).toFixed(2)} DL`}
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center border shadow-sm">
@@ -417,7 +417,7 @@ export default function ProductDetailPage() {
                       <span className="text-zinc-900">
                         {selectedCurrency === "IDR"
                           ? formatPrice(user?.balance || 0)
-                          : `${((user?.wl || 0) / 100).toFixed(2)} DL`}
+                          : `${((user?.wl || 0)).toFixed(2)} DL`}
                       </span>
                     </p>
                   )}
