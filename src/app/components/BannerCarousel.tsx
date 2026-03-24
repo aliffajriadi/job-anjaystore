@@ -27,6 +27,12 @@ const banners = [
     title: "Automated Bot Services",
     subtitle: "Boost Your Efficiency with Our Advanced Bot Solutions",
   },
+  {
+    id: 4,
+    image: "/banners/script.png",
+    title: "Script & Tools",
+    subtitle: "Automate Your Store & Growtopia Gameplay",
+  },
 ];
 
 export const BannerCarousel = ({ images }: { images: string[] }) => {

@@ -122,6 +122,7 @@ export default function Home() {
             "/banners/proxy.png",
             "/banners/growtopia.png",
             "/banners/bot.png",
+            "/banners/script.png",
           ]}
         />
 
